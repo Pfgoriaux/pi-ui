@@ -1,8 +1,9 @@
 name: Check
+# CI runs on the self-hosted runner (ci-runner, arm64): GitHub-hosted minutes are not used.
 on: [push, pull_request]
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, docker]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
