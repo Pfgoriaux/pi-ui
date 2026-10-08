@@ -60,7 +60,7 @@ test("native context color preserves tokens, cache hit rate, cost and layout", (
 
 test("native footer decoration is removable and never replaces other rows", () => {
   const native = FooterComponent.prototype.render;
-  const stub = () => ["~/eden", "51.2%/272k (auto)", "other extension status"];
+  const stub = () => ["~/project", "51.2%/272k (auto)", "other extension status"];
   FooterComponent.prototype.render = stub;
   const remove = installContextColor(() => ({
     tokens: 139264,
@@ -70,7 +70,7 @@ test("native footer decoration is removable and never replaces other rows", () =
   try {
     const footer = Object.create(FooterComponent.prototype) as FooterComponent;
     const rows = footer.render(120);
-    assert.equal(rows[0], "~/eden");
+    assert.equal(rows[0], "~/project");
     assert.equal(rows[2], "other extension status");
     assert.equal(rows[1], `${colorize("51.2%/272k", "critical")} (auto)`);
     remove();

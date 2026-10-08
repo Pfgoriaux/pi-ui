@@ -20,7 +20,7 @@ and RPC sessions show no widgets and do not poll.
 ## Context breakdown
 
 After the first message, one line shows a colored stacked bar, used/total tokens
-with the percentage, and a legend for categories above 3% of the estimate.
+with the percentage, and a legend for categories at 3% or more of the estimate.
 Categories are system prompt parts (base, context files, skills, tools,
 sections, config, guidelines) and messages (user, assistant, tool calls, tool
 results, images, summaries, other).
@@ -29,8 +29,9 @@ Category sizes are estimates at about four characters per token. Tool
 definitions are approximated. When Pi reports actual usage, the total and
 percentage use it; otherwise they use the estimate.
 
-`/context` lists each category with a bar, estimated tokens, share, and item
-count, followed by actual and estimated totals and the context window.
+`/context` lists each nonzero category with a bar, estimated tokens, share, and
+item count, followed by the estimated total and the context window. It adds the
+actual total and usage when Pi reports them.
 
 ## Usage bar
 
@@ -54,9 +55,10 @@ accounting/layout, and removes the decoration on shutdown/reload.
   Codex is direct, not routed through Aperture. This private endpoint can change;
   failed checks show a safe error or retain a visibly stale previous reading.
 - **Claude:** polls `api.anthropic.com/api/oauth/usage`, the undocumented
-  endpoint behind Claude Code's `/usage` screen, every three minutes through
-  Pi's existing `anthropic` login. Shows the five-hour and weekly windows. The
-  endpoint is rate limited per token and can change.
+  endpoint behind Claude Code's `/usage` screen, through Pi's existing
+  `anthropic` login. It polls three minutes after a successful reading and
+  retries once a minute after a failure. Shows the five-hour and weekly windows.
+  The endpoint is rate limited per token and can change.
 
 The bar hides credit balances (`$` and paid credits) and per-model weekly
 limits, even when a provider reports them.
