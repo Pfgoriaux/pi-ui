@@ -5,6 +5,7 @@ export const names: Record<Provider, string> = {
   synthetic: "Synthetic",
   neuralwatt: "Neuralwatt",
   claude: "Claude",
+  claude2: "Claude 2",
 };
 export type QuotaHealth = "healthy" | "warning" | "critical" | "unknown";
 export function health(

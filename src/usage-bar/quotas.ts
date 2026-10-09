@@ -3,6 +3,7 @@ export const providers = [
   "synthetic",
   "neuralwatt",
   "claude",
+  "claude2",
 ] as const;
 export type Provider = (typeof providers)[number];
 export interface Limit {
