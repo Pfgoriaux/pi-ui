@@ -19,10 +19,17 @@ import {
   synthetic,
 } from "./quotas.ts";
 
-// Providers polled directly over HTTP vs those fed by quota events.
-type FetchProvider = "codex" | "claude";
+// Providers polled directly over HTTP, with the Pi provider holding their
+// login. The rest are fed by quota events. `anthropic-2` is the second Claude
+// account registered by pi-ant-auth.
+const fetched = {
+  codex: { fetcher: fetchCodexUsage, auth: "openai-codex" },
+  claude: { fetcher: fetchClaudeUsage, auth: "anthropic" },
+  claude2: { fetcher: fetchClaudeUsage, auth: "anthropic-2" },
+} as const;
+type FetchProvider = keyof typeof fetched;
 function isFetchProvider(provider: Provider): provider is FetchProvider {
-  return provider === "codex" || provider === "claude";
+  return provider in fetched;
 }
 // Minimum seconds of snapshot freshness. Claude's usage endpoint is rate
 // limited per access token (~5 requests); community-observed safe cadence is
@@ -32,6 +39,7 @@ const minInterval: Record<Provider, number> = {
   synthetic: 60_000,
   neuralwatt: 60_000,
   claude: 180_000,
+  claude2: 180_000,
 };
 
 export default function usageBar(pi: ExtensionAPI): void {
@@ -56,10 +64,9 @@ export default function usageBar(pi: ExtensionAPI): void {
     const controller = new AbortController();
     requests[provider] = controller;
     try {
-      const fetcher = provider === "codex" ? fetchCodexUsage : fetchClaudeUsage;
-      const providerName = provider === "codex" ? "openai-codex" : "anthropic";
+      const { fetcher, auth } = fetched[provider];
       const result = await fetcher(
-        () => context.modelRegistry.getProviderAuth(providerName),
+        () => context.modelRegistry.getProviderAuth(auth),
         controller.signal,
       );
       if (controller.signal.aborted || ctx !== context) return;
@@ -157,8 +164,7 @@ export default function usageBar(pi: ExtensionAPI): void {
   pi.on("session_shutdown", () => {
     if (startTimer) clearTimeout(startTimer);
     if (timer) clearInterval(timer);
-    for (const provider of ["codex", "claude"] as const)
-      requests[provider]?.abort();
+    for (const controller of Object.values(requests)) controller?.abort();
     restoreFooter?.();
     for (const unsubscribe of unsubscribers) unsubscribe();
     ctx?.ui.setWidget("usage-bar", undefined);

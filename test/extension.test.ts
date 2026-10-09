@@ -64,7 +64,7 @@ test("always visible on unrelated models, auto-refresh, wrapping and cleanup", a
     h.hooks.get("session_start")?.({}, h.context);
     assert.match(
       h.render(200)?.join(" ") ?? "",
-      /Codex:.*Synthetic:.*Neuralwatt:.*Claude:/,
+      /Codex:.*Synthetic:.*Neuralwatt:.*Claude:.*Claude 2:/,
     );
     assert.doesNotMatch(h.render(200)?.join(" ") ?? "", /Context:/);
     await delay(600);
