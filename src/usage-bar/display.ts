@@ -63,14 +63,17 @@ export function duration(ms: number): string {
   if (minutes < 1440) return `${Math.floor(minutes / 60)}h${minutes % 60}m`;
   return `${Math.floor(minutes / 1440)}d${Math.floor((minutes % 1440) / 60)}h`;
 }
-// Filter out credits and scoped model weeks (fableweek, opus48week, etc.)
+// Shown labels, renamed for display. Hides credits and model-scoped weeks
+// except Fable's, which caps Fable 5 and 5.1 usage on Claude Max.
+const shownLabels: Record<string, string> = { fableweek: "fable" };
 function filterLimits(limits: Snapshot["limits"]): Snapshot["limits"] {
   return limits.filter((limit) => {
-    // Skip credits (unit $ or credits)
     if (limit.unit === "$" || limit.unit === "credits") return false;
-    // Skip scoped model weeks (ends with "week" but isn't just "week")
-    if (limit.label.endsWith("week") && limit.label !== "week") return false;
-    return true;
+    return (
+      !limit.label.endsWith("week") ||
+      limit.label === "week" ||
+      limit.label in shownLabels
+    );
   });
 }
 
@@ -102,7 +105,7 @@ export function describe(
               : " (refill pending)"
             : " (refresh due)"
           : ` (${limit.renewal ?? "reset"} ${duration(limit.at - now)})`;
-    return `${limit.label} ${value} left${reset}`;
+    return `${shownLabels[limit.label] ?? limit.label} ${value} left${reset}`;
   });
   return `${names[provider]}: ${items.join(" / ")}${stale ? ` [stale ${duration(now - snapshot.updatedAt)}]` : ""}`;
 }

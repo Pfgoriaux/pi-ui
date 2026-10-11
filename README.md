@@ -64,7 +64,9 @@ accounting/layout, and removes the decoration on shutdown/reload.
   account is logged in.
 
 The bar hides credit balances (`$` and paid credits) and per-model weekly
-limits, even when a provider reports them.
+limits, even when a provider reports them. The exception is Claude's Fable
+weekly limit, shown as `fable`. It covers Fable 5 and Fable 5.1 together and
+has its own percentage, separate from the overall `week` window.
 
 No credentials are copied or logged. Pi manages Codex and Claude login refresh.
 Synthetic/Neuralwatt utility requests use those installed extensions' existing
