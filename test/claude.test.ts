@@ -35,6 +35,26 @@ test("Claude parses the modern limits array into quota windows", () => {
   assert.equal(health(snapshot, now), "healthy");
 });
 
+test("Claude shows the Fable weekly limit and hides other model weeks", () => {
+  const snapshot = claudeUsage(
+    {
+      limits: [
+        ...modern.limits,
+        {
+          kind: "weekly_scoped",
+          percent: 45,
+          resets_at: "2030-01-07T00:00:00Z",
+          scope: { model: { display_name: "Fable" } },
+        },
+      ],
+    },
+    now,
+  );
+  const text = describe("claude", snapshot, now);
+  assert.match(text, / \/ fable 55% left \(reset /);
+  assert.doesNotMatch(text, /opus48week/);
+});
+
 test("Claude skips malformed entries in the limits array, never fatal", () => {
   const snapshot = claudeUsage(
     {
