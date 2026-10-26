@@ -64,18 +64,11 @@ test("always visible on unrelated models, auto-refresh, wrapping and cleanup", a
     h.hooks.get("session_start")?.({}, h.context);
     assert.match(
       h.render(200)?.join(" ") ?? "",
-      /Codex:.*Synthetic:.*Neuralwatt:.*Claude:.*Claude 2:/,
+      /Codex:.*Neuralwatt:.*Claude:.*Claude 2:/,
     );
     assert.doesNotMatch(h.render(200)?.join(" ") ?? "", /Context:/);
     await delay(600);
-    assert.deepEqual(h.requests.sort(), [
-      "neuralwatt:quotas:request",
-      "synthetic:quotas:request",
-    ]);
-    h.events.get("synthetic:quotas:updated")?.({
-      quotas: { subscription: { limit: 100, requests: 10 } },
-      updatedAt: Date.now(),
-    });
+    assert.deepEqual(h.requests, ["neuralwatt:quotas:request"]);
     h.events.get("neuralwatt:quotas:updated")?.({
       source: "header",
       quotas: { balance: { credits_remaining_usd: 0 } },
@@ -88,7 +81,6 @@ test("always visible on unrelated models, auto-refresh, wrapping and cleanup", a
     const rendered = h.render(200)?.join(" ") ?? "";
     assert.match(rendered, /Codex: login required/);
     assert.match(rendered, /Claude: login required/);
-    assert.match(rendered, /Synthetic: requests 90% left/);
     // credits are filtered out, Neuralwatt shows "no limits" when only credits remain
     assert.match(rendered, /Neuralwatt: no limits/);
     for (const width of [1, 10, 40, 80, 200]) {

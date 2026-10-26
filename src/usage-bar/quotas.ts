@@ -1,10 +1,4 @@
-export const providers = [
-  "codex",
-  "synthetic",
-  "neuralwatt",
-  "claude",
-  "claude2",
-] as const;
+export const providers = ["codex", "neuralwatt", "claude", "claude2"] as const;
 export type Provider = (typeof providers)[number];
 export interface Limit {
   label: string;
@@ -12,7 +6,7 @@ export interface Limit {
   percentRemaining?: number;
   unit: "%" | "$" | "kWh" | "credits";
   at?: number;
-  renewal?: "reset" | "refill";
+  renewal?: "reset";
 }
 export interface Snapshot {
   updatedAt: number;
@@ -41,52 +35,6 @@ function percent(remaining: unknown, total: unknown): number | undefined {
 }
 function result(limits: Limit[], now: number): Snapshot | undefined {
   return limits.length ? { updatedAt: now, limits } : undefined;
-}
-export function synthetic(
-  value: unknown,
-  now = Date.now(),
-): Snapshot | undefined {
-  const q = object(value);
-  const limits: Limit[] = [];
-  const rolling = object(q.rollingFiveHourLimit);
-  const subscription = object(q.subscription);
-  const remaining = percent(rolling.remaining, rolling.max);
-  if (remaining !== undefined) {
-    limits.push({
-      label: "5h",
-      remaining,
-      unit: "%",
-      at: date(rolling.nextTickAt),
-      renewal: "refill",
-    });
-  } else {
-    const total = number(subscription.limit);
-    const used = number(subscription.requests);
-    const left =
-      total !== undefined && used !== undefined && used >= 0
-        ? percent(Math.max(0, total - used), total)
-        : undefined;
-    if (left !== undefined)
-      limits.push({
-        label: "requests",
-        remaining: left,
-        unit: "%",
-        at: date(subscription.renewsAt),
-        renewal: "reset",
-      });
-  }
-  const weekly = object(q.weeklyTokenLimit);
-  const week = number(weekly.percentRemaining);
-  if (week !== undefined && week >= 0 && week <= 100) {
-    limits.push({
-      label: "week",
-      remaining: week,
-      unit: "%",
-      at: date(weekly.nextRegenAt),
-      renewal: "refill",
-    });
-  }
-  return result(limits, now);
 }
 export function neuralwatt(
   value: unknown,
@@ -158,9 +106,7 @@ export function validSnapshot(
           (Number(l.remaining) >= 0 && Number(l.remaining) <= 100)) &&
         (l.at === undefined ||
           (number(l.at) !== undefined && Number(l.at) > 0)) &&
-        (l.renewal === undefined ||
-          l.renewal === "reset" ||
-          l.renewal === "refill")
+        (l.renewal === undefined || l.renewal === "reset")
       );
     })
   );

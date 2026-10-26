@@ -2,8 +2,8 @@
 
 Two widgets shown below the input box in every interactive Pi tab:
 
-- **Usage bar:** provider quota snapshots for Synthetic, Neuralwatt, Codex, and
-  two Claude accounts, plus coloring of the footer's context token.
+- **Usage bar:** provider quota snapshots for Neuralwatt, Codex, and two Claude
+  accounts, plus coloring of the footer's context token.
 - **Context breakdown:** a stacked bar of what fills the context window, and a
   `/context` command with the detailed breakdown.
 
@@ -44,9 +44,6 @@ accounting/layout, and removes the decoration on shutdown/reload.
 
 ## Data sources
 
-- **Synthetic:** requests the installed `@aliou/pi-synthetic` extension's quota
-  events every minute. Shows rolling five-hour and weekly percentages remaining,
-  with refill countdowns; falls back to legacy request quota when supplied.
 - **Neuralwatt:** requests the installed `@aliou/pi-neuralwatt` extension's quota
   events every minute. Shows remaining energy.
 - **Codex:** polls ChatGPT's `/backend-api/wham/usage` every minute through
@@ -69,8 +66,8 @@ weekly limit, shown as `fable`. It covers Fable 5 and Fable 5.1 together and
 has its own percentage, separate from the overall `week` window.
 
 No credentials are copied or logged. Pi manages Codex and Claude login refresh.
-Synthetic/Neuralwatt utility requests use those installed extensions' existing
-configuration; this does not migrate their credential handling to Aperture.
+Neuralwatt utility requests use the installed extension's existing
+configuration; this does not migrate its credential handling to Aperture.
 
 Normalized numbers and timestamps are shared across local tabs under
 `$PI_CODING_AGENT_DIR/cache/usage-bar` (default `~/.pi/agent/cache/usage-bar`).
@@ -85,11 +82,9 @@ account IDs, emails, or raw responses.
 Colors use explicit RGB (independent of the Pi theme) and the lowest reported
 remaining quota: **green ≥50%**, **orange <50%**, **red <25%**. Energy
 quota uses its reported total to calculate a percentage.
-Unknown totals, expired fixed reset times, and stale readings are grey.
-A past Synthetic refill timestamp does not invalidate a fresh balance: pending
-refills are labeled without removing the quota color.
+Unknown totals, expired reset times, and stale readings are grey.
 
-Readings older than three minutes are marked **stale**. Expired fixed-window
+Readings older than three minutes are marked **stale**. Expired reset
 countdowns say **refresh due**; the widget never invents a renewed balance.
 Provider failures leave the previous reading visibly stale, or unavailable if
 no reading exists. Provider extensions must be enabled for active refreshes.

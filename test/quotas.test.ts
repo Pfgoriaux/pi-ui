@@ -1,77 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { describe, health } from "../src/usage-bar/display.ts";
-import {
-  neuralwatt,
-  synthetic,
-  validSnapshot,
-} from "../src/usage-bar/quotas.ts";
+import { describe } from "../src/usage-bar/display.ts";
+import { neuralwatt, validSnapshot } from "../src/usage-bar/quotas.ts";
 
 const now = Date.now();
-test("Synthetic rolling and weekly quota retain refill semantics", () => {
-  const snapshot = synthetic(
-    {
-      rollingFiveHourLimit: {
-        remaining: 40,
-        max: 100,
-        nextTickAt: new Date(now + 60000).toISOString(),
-      },
-      weeklyTokenLimit: {
-        percentRemaining: 12.5,
-        nextRegenAt: new Date(now + 120000).toISOString(),
-      },
-    },
-    now,
-  );
-  assert.equal(snapshot?.limits[0].remaining, 40);
-  assert.equal(snapshot?.limits[1].remaining, 12.5);
-  assert.match(describe("synthetic", snapshot, now), /refill 1m/);
-  assert.match(describe("synthetic", snapshot, now), /week 12% left/);
-});
-test("fresh Synthetic readings remain colored when refill timestamps are past", () => {
-  const snapshot = synthetic(
-    {
-      rollingFiveHourLimit: {
-        remaining: 100,
-        max: 100,
-        nextTickAt: new Date(now - 60000).toISOString(),
-      },
-      weeklyTokenLimit: {
-        percentRemaining: 57,
-        nextRegenAt: new Date(now - 60000).toISOString(),
-      },
-    },
-    now,
-  );
-  assert.equal(health(snapshot, now), "healthy");
-  assert.doesNotMatch(describe("synthetic", snapshot, now), /refresh due/);
-  assert.match(
-    describe("synthetic", snapshot, now),
-    /week 57% left \(refill pending\)/,
-  );
-  assert.equal(health(snapshot, now + 180001), "unknown");
-});
-
-test("legacy requests, exhausted, and malformed values are distinct", () => {
-  assert.equal(
-    synthetic({ subscription: { limit: 100, requests: 25 } })?.limits[0]
-      .remaining,
-    75,
-  );
-  assert.equal(
-    synthetic({ subscription: { limit: 100, requests: 120 } })?.limits[0]
-      .remaining,
-    0,
-  );
-  for (const input of [
-    null,
-    {},
-    { subscription: { limit: 0, requests: 0 } },
-    { weeklyTokenLimit: { percentRemaining: Number.NaN } },
-  ]) {
-    assert.equal(synthetic(input), undefined);
-  }
-});
 test("Neuralwatt keeps energy and credits in their actual units", () => {
   const snapshot = neuralwatt(
     {
@@ -129,6 +61,13 @@ test("disk snapshot validator rejects control text, nonfinite and future data", 
     validSnapshot({
       updatedAt: now + 90000,
       limits: [{ label: "5h", unit: "%", remaining: 1 }],
+    }),
+    false,
+  );
+  assert.equal(
+    validSnapshot({
+      updatedAt: now,
+      limits: [{ label: "5h", unit: "%", remaining: 1, renewal: "refill" }],
     }),
     false,
   );

@@ -63,11 +63,11 @@ test("tabs share snapshots and claim only one poll per minute", () => {
     );
     assert.deepEqual(b.read("neuralwatt"), energy);
     const slot = 120000;
-    writeFileSync(join(directory, "synthetic.2.poll"), "");
-    assert.equal(a.claim("synthetic", slot), true);
-    assert.equal(b.claim("synthetic", slot), false);
+    writeFileSync(join(directory, "codex.2.poll"), "");
+    assert.equal(a.claim("codex", slot), true);
+    assert.equal(b.claim("codex", slot), false);
     assert.equal(b.claim("neuralwatt", slot), true);
-    assert.equal(b.claim("synthetic", slot + 60000), true);
+    assert.equal(b.claim("codex", slot + 60000), true);
     a.write("codex", { ...snapshot, updatedAt: snapshot.updatedAt - 1000 });
     assert.deepEqual(b.read("codex"), snapshot);
     assert.deepEqual(
