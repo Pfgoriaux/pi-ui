@@ -10,8 +10,7 @@ The usage bar displays account quota snapshots, not session token costs.
 
 Codex in Pi is direct, not routed through Aperture: resolve its existing login
 through Pi's model registry for read-only usage polling. Never persist or log
-credentials. Synthetic/Neuralwatt stay behind their installed extension event
-APIs. Never interpret missing data as zero. Neuralwatt header events contain
+credentials. Neuralwatt stays behind its installed extension event API. Never interpret missing data as zero. Neuralwatt header events contain
 placeholder balances; consume its API snapshots instead.
 
 ## Checks

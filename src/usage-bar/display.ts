@@ -2,7 +2,6 @@ import type { ContextUsage } from "@earendil-works/pi-coding-agent";
 import type { Provider, Snapshot } from "./quotas.ts";
 export const names: Record<Provider, string> = {
   codex: "Codex",
-  synthetic: "Synthetic",
   neuralwatt: "Neuralwatt",
   claude: "Claude",
   claude2: "Claude 2",
@@ -15,9 +14,7 @@ export function health(
   if (
     !snapshot ||
     now - snapshot.updatedAt > 180_000 ||
-    snapshot.limits.some(
-      (l) => l.renewal !== "refill" && l.at !== undefined && l.at <= now,
-    )
+    snapshot.limits.some((l) => l.at !== undefined && l.at <= now)
   )
     return "unknown";
   const percentages = snapshot.limits.flatMap((l) => {
@@ -99,12 +96,8 @@ export function describe(
       limit.at === undefined
         ? ""
         : limit.at <= now
-          ? limit.renewal === "refill"
-            ? limit.unit === "%" && limit.remaining >= 100
-              ? ""
-              : " (refill pending)"
-            : " (refresh due)"
-          : ` (${limit.renewal ?? "reset"} ${duration(limit.at - now)})`;
+          ? " (refresh due)"
+          : ` (reset ${duration(limit.at - now)})`;
     return `${shownLabels[limit.label] ?? limit.label} ${value} left${reset}`;
   });
   return `${names[provider]}: ${items.join(" / ")}${stale ? ` [stale ${duration(now - snapshot.updatedAt)}]` : ""}`;

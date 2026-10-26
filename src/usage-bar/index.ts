@@ -16,7 +16,6 @@ import {
   type Provider,
   providers,
   type Snapshot,
-  synthetic,
 } from "./quotas.ts";
 
 // Providers polled directly over HTTP, with the Pi provider holding their
@@ -36,7 +35,6 @@ function isFetchProvider(provider: Provider): provider is FetchProvider {
 // >=180s (anthropic/claude-code#31637).
 const minInterval: Record<Provider, number> = {
   codex: 60_000,
-  synthetic: 60_000,
   neuralwatt: 60_000,
   claude: 180_000,
   claude2: 180_000,
@@ -86,17 +84,9 @@ export default function usageBar(pi: ExtensionAPI): void {
     repaint?.();
   };
   const unsubscribers = [
-    pi.events.on("synthetic:quotas:updated", (payload: unknown) => {
-      const data = object(payload);
-      const at =
-        typeof data.updatedAt === "number" && Number.isFinite(data.updatedAt)
-          ? Math.min(Date.now(), data.updatedAt)
-          : Date.now();
-      ingest("synthetic", synthetic(data.quotas, at));
-    }),
     pi.events.on("neuralwatt:quotas:updated", (payload: unknown) => {
       const data = object(payload);
-      // Header-derived events contain synthetic zero balances. Only the quota API
+      // Header-derived events contain placeholder zero balances. Only the quota API
       // snapshot is authoritative for the combined energy + credit + key display.
       if (data.source === "api") ingest("neuralwatt", neuralwatt(data.quotas));
     }),
