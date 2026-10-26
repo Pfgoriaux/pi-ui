@@ -64,4 +64,11 @@ test("disk snapshot validator rejects control text, nonfinite and future data", 
     }),
     false,
   );
+  assert.equal(
+    validSnapshot({
+      updatedAt: now,
+      limits: [{ label: "5h", unit: "%", remaining: 1, renewal: "refill" }],
+    }),
+    false,
+  );
 });
