@@ -45,7 +45,8 @@ accounting/layout, and removes the decoration on shutdown/reload.
 ## Data sources
 
 - **Neuralwatt:** requests the installed `@aliou/pi-neuralwatt` extension's quota
-  events every minute. Shows remaining energy.
+  events every minute. Shows remaining energy in kWh and, when Neuralwatt
+  reports the included total, as a percentage, e.g. `energy 21.91kWh (73%) left`.
 - **Codex:** polls ChatGPT's `/backend-api/wham/usage` every minute through
   Pi's existing `openai-codex` login, including while idle or using another model.
   Shows the five-hour/weekly limits and resets.

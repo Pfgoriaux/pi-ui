@@ -28,6 +28,16 @@ test("Neuralwatt keeps energy and credits in their actual units", () => {
   assert.match(describe("neuralwatt", snapshot, now), /energy 0.42kWh left/);
   assert.equal(neuralwatt({}), undefined);
 });
+test("Neuralwatt energy shows the share of the included kWh", () => {
+  const snapshot = neuralwatt(
+    { subscription: { kwh_remaining: 21.91, kwh_included: 30 } },
+    now,
+  );
+  assert.match(
+    describe("neuralwatt", snapshot, now),
+    /energy 21.91kWh \(73%\) left/,
+  );
+});
 test("missing data is unknown, never fabricated remaining credits", () => {
   assert.match(describe("codex", undefined), /unavailable/);
   assert.match(describe("neuralwatt", undefined), /unavailable/);

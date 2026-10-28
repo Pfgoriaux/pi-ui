@@ -74,6 +74,17 @@ function filterLimits(limits: Snapshot["limits"]): Snapshot["limits"] {
   });
 }
 
+function formatValue(limit: Snapshot["limits"][number]): string {
+  if (limit.unit === "$") return `$${limit.remaining.toFixed(2)}`;
+  if (limit.unit === "%") return `${Math.floor(limit.remaining)}%`;
+  if (limit.unit === "credits") return limit.remaining.toFixed(2);
+  const share =
+    limit.percentRemaining === undefined
+      ? ""
+      : ` (${Math.floor(limit.percentRemaining)}%)`;
+  return `${limit.remaining.toFixed(2)}kWh${share}`;
+}
+
 export function describe(
   provider: Provider,
   snapshot: Snapshot | undefined,
@@ -84,14 +95,7 @@ export function describe(
   const filtered = filterLimits(snapshot.limits);
   if (filtered.length === 0) return `${names[provider]}: no limits`;
   const items = filtered.map((limit) => {
-    const value =
-      limit.unit === "$"
-        ? `$${limit.remaining.toFixed(2)}`
-        : limit.unit === "%"
-          ? `${Math.floor(limit.remaining)}%`
-          : limit.unit === "credits"
-            ? `${limit.remaining.toFixed(2)}`
-            : `${limit.remaining.toFixed(2)}kWh`;
+    const value = formatValue(limit);
     const reset =
       limit.at === undefined
         ? ""
