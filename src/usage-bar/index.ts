@@ -23,7 +23,6 @@ import {
 // account registered by pi-ant-auth.
 const fetched = {
   codex: { fetcher: fetchCodexUsage, auth: "openai-codex" },
-  claude: { fetcher: fetchClaudeUsage, auth: "anthropic" },
   claude2: { fetcher: fetchClaudeUsage, auth: "anthropic-2" },
 } as const;
 type FetchProvider = keyof typeof fetched;
@@ -36,7 +35,6 @@ function isFetchProvider(provider: Provider): provider is FetchProvider {
 const minInterval: Record<Provider, number> = {
   codex: 60_000,
   neuralwatt: 60_000,
-  claude: 180_000,
   claude2: 180_000,
 };
 

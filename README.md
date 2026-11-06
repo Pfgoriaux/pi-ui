@@ -2,8 +2,8 @@
 
 Two widgets shown below the input box in every interactive Pi tab:
 
-- **Usage bar:** provider quota snapshots for Neuralwatt, Codex, and two Claude
-  accounts, plus coloring of the footer's context token.
+- **Usage bar:** provider quota snapshots for Neuralwatt, Codex, and Claude 2,
+  plus coloring of the footer's context token.
 - **Context breakdown:** a stacked bar of what fills the context window, and a
   `/context` command with the detailed breakdown.
 
@@ -52,14 +52,13 @@ accounting/layout, and removes the decoration on shutdown/reload.
   Shows the five-hour/weekly limits and resets.
   Codex is direct, not routed through Aperture. This private endpoint can change;
   failed checks show a safe error or retain a visibly stale previous reading.
-- **Claude:** polls `api.anthropic.com/api/oauth/usage`, the undocumented
+- **Claude 2:** polls `api.anthropic.com/api/oauth/usage`, the undocumented
   endpoint behind Claude Code's `/usage` screen, through Pi's existing
-  `anthropic` login. It polls three minutes after a successful reading and
-  retries once a minute after a failure. Shows the five-hour and weekly windows.
+  `anthropic-2` login registered by pi-ant. It polls three minutes after a
+  successful reading and retries once a minute after a failure. Shows the
+  five-hour and weekly windows.
   The endpoint is rate limited per token and can change.
-- **Claude 2:** the same check through the `anthropic-2` login that pi-ant
-  registers for a second Claude account. Shows `login required` until that
-  account is logged in.
+  Shows `login required` until that account is logged in.
 
 The bar hides credit balances (`$` and paid credits) and per-model weekly
 limits, even when a provider reports them. The exception is Claude's Fable

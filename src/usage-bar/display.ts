@@ -3,7 +3,6 @@ import type { Provider, Snapshot } from "./quotas.ts";
 export const names: Record<Provider, string> = {
   codex: "Codex",
   neuralwatt: "Neuralwatt",
-  claude: "Claude",
   claude2: "Claude 2",
 };
 export type QuotaHealth = "healthy" | "warning" | "critical" | "unknown";

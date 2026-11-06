@@ -1,4 +1,4 @@
-export const providers = ["codex", "neuralwatt", "claude", "claude2"] as const;
+export const providers = ["codex", "neuralwatt", "claude2"] as const;
 export type Provider = (typeof providers)[number];
 export interface Limit {
   label: string;
