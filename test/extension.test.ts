@@ -16,13 +16,19 @@ function harness(mode: "tui" | "print") {
   const hooks = new Map<string, Handler>();
   const events = new Map<string, (data: unknown) => void>();
   const requests: string[] = [];
+  const authRequests: string[] = [];
   let widget: { render: (width: number) => string[] } | undefined;
   const context = {
     mode,
     // Deliberately unrelated model: all three providers must still be shown.
     model: { provider: "other" },
     getContextUsage: () => ({ tokens: 200, contextWindow: 1000, percent: 20 }),
-    modelRegistry: { getProviderAuth: async () => undefined },
+    modelRegistry: {
+      getProviderAuth: async (provider: string) => {
+        authRequests.push(provider);
+        return undefined;
+      },
+    },
     ui: {
       setWidget: (
         _key: string,
@@ -50,6 +56,7 @@ function harness(mode: "tui" | "print") {
     hooks,
     events,
     requests,
+    authRequests,
     context,
     render: (width: number) => widget?.render(width),
   };
@@ -64,11 +71,12 @@ test("always visible on unrelated models, auto-refresh, wrapping and cleanup", a
     h.hooks.get("session_start")?.({}, h.context);
     assert.match(
       h.render(200)?.join(" ") ?? "",
-      /Codex:.*Neuralwatt:.*Claude:.*Claude 2:/,
+      /Codex:.*Neuralwatt:.*Claude 2:/,
     );
     assert.doesNotMatch(h.render(200)?.join(" ") ?? "", /Context:/);
     await delay(600);
     assert.deepEqual(h.requests, ["neuralwatt:quotas:request"]);
+    assert.deepEqual(h.authRequests.sort(), ["anthropic-2", "openai-codex"]);
     h.events.get("neuralwatt:quotas:updated")?.({
       source: "header",
       quotas: { balance: { credits_remaining_usd: 0 } },
@@ -80,7 +88,8 @@ test("always visible on unrelated models, auto-refresh, wrapping and cleanup", a
     });
     const rendered = h.render(200)?.join(" ") ?? "";
     assert.match(rendered, /Codex: login required/);
-    assert.match(rendered, /Claude: login required/);
+    assert.match(rendered, /Claude 2: login required/);
+    assert.doesNotMatch(rendered, /Claude:/);
     // credits are filtered out, Neuralwatt shows "no limits" when only credits remain
     assert.match(rendered, /Neuralwatt: no limits/);
     for (const width of [1, 10, 40, 80, 200]) {

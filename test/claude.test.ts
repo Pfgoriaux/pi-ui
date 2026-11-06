@@ -31,7 +31,7 @@ test("Claude parses the modern limits array into quota windows", () => {
   );
   assert.equal(snapshot?.limits[0].at, Date.parse("2030-01-01T00:00:00Z"));
   assert.equal(validSnapshot(snapshot), true);
-  assert.match(describe("claude", snapshot, now), /Claude: 5h 64% left/);
+  assert.match(describe("claude2", snapshot, now), /Claude 2: 5h 64% left/);
   assert.equal(health(snapshot, now), "healthy");
 });
 
@@ -50,7 +50,7 @@ test("Claude shows the Fable weekly limit and hides other model weeks", () => {
     },
     now,
   );
-  const text = describe("claude", snapshot, now);
+  const text = describe("claude2", snapshot, now);
   assert.match(text, / \/ fable 55% left \(reset /);
   assert.doesNotMatch(text, /opus48week/);
 });
