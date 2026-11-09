@@ -47,6 +47,12 @@ accounting/layout, and removes the decoration on shutdown/reload.
 - **Neuralwatt:** requests the installed `@aliou/pi-neuralwatt` extension's quota
   events every minute. Shows remaining energy in kWh and, when Neuralwatt
   reports the included total, as a percentage, e.g. `energy 21.91kWh (73%) left`.
+  Once the included energy is used up and a monthly spending limit allows
+  overage, it shows the overage budget instead: the credit balance, capped by
+  that limit, with its share of the limit, e.g. `extra $51.26 (25%) left`. The
+  quota API does not report overage already spent, so the budget can overstate
+  what is left of the limit; Neuralwatt enforces it. Pi-dispatch reads the same
+  reading and keeps Neuralwatt workers eligible while the budget is above zero.
 - **Codex:** polls ChatGPT's `/backend-api/wham/usage` every minute through
   Pi's existing `openai-codex` login, including while idle or using another model.
   Shows the five-hour/weekly limits and resets.
@@ -60,8 +66,8 @@ accounting/layout, and removes the decoration on shutdown/reload.
   The endpoint is rate limited per token and can change.
   Shows `login required` until that account is logged in.
 
-The bar hides credit balances (`$` and paid credits) and per-model weekly
-limits, even when a provider reports them. The exception is Claude's Fable
+The bar hides credit balances (`$` and paid credits), except the Neuralwatt
+overage budget, and per-model weekly limits, even when a provider reports them. The exception is Claude's Fable
 weekly limit, shown as `fable`. It covers Fable 5 and Fable 5.1 together and
 has its own percentage, separate from the overall `week` window.
 
