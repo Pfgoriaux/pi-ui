@@ -60,10 +60,12 @@ export function duration(ms: number): string {
   return `${Math.floor(minutes / 1440)}d${Math.floor((minutes % 1440) / 60)}h`;
 }
 // Shown labels, renamed for display. Hides credits and model-scoped weeks
-// except Fable's, which caps Fable 5 and 5.1 usage on Claude Max.
+// except Fable's, which caps Fable 5 and 5.1 usage on Claude Max. Neuralwatt's
+// overage budget (`extra`) is the one dollar amount shown.
 const shownLabels: Record<string, string> = { fableweek: "fable" };
 function filterLimits(limits: Snapshot["limits"]): Snapshot["limits"] {
   return limits.filter((limit) => {
+    if (limit.label === "extra") return true;
     if (limit.unit === "$" || limit.unit === "credits") return false;
     return (
       !limit.label.endsWith("week") ||
@@ -73,15 +75,19 @@ function filterLimits(limits: Snapshot["limits"]): Snapshot["limits"] {
   });
 }
 
-function formatValue(limit: Snapshot["limits"][number]): string {
+function formatAmount(limit: Snapshot["limits"][number]): string {
   if (limit.unit === "$") return `$${limit.remaining.toFixed(2)}`;
-  if (limit.unit === "%") return `${Math.floor(limit.remaining)}%`;
   if (limit.unit === "credits") return limit.remaining.toFixed(2);
+  return `${limit.remaining.toFixed(2)}kWh`;
+}
+
+function formatValue(limit: Snapshot["limits"][number]): string {
+  if (limit.unit === "%") return `${Math.floor(limit.remaining)}%`;
   const share =
     limit.percentRemaining === undefined
       ? ""
       : ` (${Math.floor(limit.percentRemaining)}%)`;
-  return `${limit.remaining.toFixed(2)}kWh${share}`;
+  return `${formatAmount(limit)}${share}`;
 }
 
 export function describe(

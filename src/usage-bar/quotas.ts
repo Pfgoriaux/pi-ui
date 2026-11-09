@@ -36,23 +36,56 @@ function percent(remaining: unknown, total: unknown): number | undefined {
 function result(limits: Limit[], now: number): Snapshot | undefined {
   return limits.length ? { updatedAt: now, limits } : undefined;
 }
+// Once the included energy is gone, Neuralwatt bills overage from the credit
+// balance up to the monthly spending limit (`overage_limit_usd`). A null limit
+// counts as no limit and zero as overage off. The quota API reports no overage
+// spend, so the budget is an upper bound; Neuralwatt enforces the limit.
+function overage(q: Record<string, unknown>): Limit | undefined {
+  const balance = object(q.balance);
+  const credits = number(balance.credits_remaining_usd);
+  const cap = object(q.limits).overage_limit_usd;
+  const ceiling = cap === null ? Number.POSITIVE_INFINITY : number(cap);
+  if (credits === undefined || ceiling === undefined || ceiling <= 0) return;
+  const remaining = Math.max(0, Math.min(credits, ceiling));
+  return {
+    label: "extra",
+    remaining,
+    unit: "$",
+    percentRemaining: percent(
+      remaining,
+      cap === null ? balance.total_credits_usd : cap,
+    ),
+  };
+}
+function energy(q: Record<string, unknown>): Limit | undefined {
+  const subscription = object(q.subscription);
+  const remaining = number(subscription.kwh_remaining);
+  if (remaining === undefined) return;
+  const renewal = {
+    at: date(subscription.current_period_end),
+    renewal: "reset" as const,
+  };
+  const extra = remaining <= 0 ? overage(q) : undefined;
+  if (extra) return { ...extra, ...renewal };
+  return {
+    label: "energy",
+    remaining,
+    percentRemaining: percent(
+      Math.max(0, remaining),
+      subscription.kwh_included,
+    ),
+    unit: "kWh",
+    ...renewal,
+  };
+}
 export function neuralwatt(
   value: unknown,
   now = Date.now(),
 ): Snapshot | undefined {
   const q = object(value);
   const limits: Limit[] = [];
-  const subscription = object(q.subscription);
-  const energy = number(subscription.kwh_remaining);
-  if (energy !== undefined)
-    limits.push({
-      label: "energy",
-      remaining: energy,
-      percentRemaining: percent(Math.max(0, energy), subscription.kwh_included),
-      unit: "kWh",
-      at: date(subscription.current_period_end),
-      renewal: "reset",
-    });
+  const included = energy(q);
+  if (included) limits.push(included);
   const balance = number(object(q.balance).credits_remaining_usd);
   if (balance !== undefined)
     limits.push({
