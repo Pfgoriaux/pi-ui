@@ -17,8 +17,9 @@ export class Cache {
   }
   private snapshotPath(provider: Provider): string {
     // Version snapshots AND polling claims: old tabs must neither overwrite
-    // percentage-aware readings nor claim refreshes for an obsolete cache.
-    return join(this.directory, `${provider}-v3.json`);
+    // newer readings (v4: Neuralwatt overage budget) nor claim refreshes for an
+    // obsolete cache.
+    return join(this.directory, `${provider}-v4.json`);
   }
   read(provider: Provider): Snapshot | undefined {
     try {
@@ -58,12 +59,12 @@ export class Cache {
     const slot = Math.floor(now / 60_000);
     try {
       mkdirSync(this.directory, { recursive: true, mode: 0o700 });
-      writeFileSync(join(this.directory, `${provider}-v3.${slot}.poll`), "", {
+      writeFileSync(join(this.directory, `${provider}-v4.${slot}.poll`), "", {
         flag: "wx",
         mode: 0o600,
       });
       try {
-        unlinkSync(join(this.directory, `${provider}-v3.${slot - 1}.poll`));
+        unlinkSync(join(this.directory, `${provider}-v4.${slot - 1}.poll`));
       } catch {
         /* First run. */
       }
