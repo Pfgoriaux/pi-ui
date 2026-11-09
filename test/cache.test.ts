@@ -23,7 +23,7 @@ test("tabs share snapshots and claim only one poll per minute", () => {
     assert.equal(a.write("codex", snapshot), true);
     assert.deepEqual(b.read("codex"), snapshot);
     assert.equal(
-      statSync(join(directory, "codex-v3.json")).mode & 0o777,
+      statSync(join(directory, "codex-v4.json")).mode & 0o777,
       0o600,
     );
     // An old extension tab overwrites the legacy file with a newer bad reading.
@@ -72,11 +72,11 @@ test("tabs share snapshots and claim only one poll per minute", () => {
     assert.deepEqual(b.read("codex"), snapshot);
     assert.deepEqual(
       Object.keys(
-        JSON.parse(readFileSync(join(directory, "codex-v3.json"), "utf8")),
+        JSON.parse(readFileSync(join(directory, "codex-v4.json"), "utf8")),
       ),
       ["updatedAt", "limits"],
     );
-    writeFileSync(join(directory, "codex-v3.json"), "{broken");
+    writeFileSync(join(directory, "codex-v4.json"), "{broken");
     assert.equal(a.read("codex"), undefined);
   } finally {
     rmSync(directory, { recursive: true, force: true });
